@@ -11,7 +11,9 @@
   ],
   "require": {
     "tourze/core": "dev-master",
-    "tourze/route": "dev-master"
+    "tourze/route": "dev-master",
+    "tourze/http": "dev-master",
+    "tourze/view": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "^4.7"
@@ -26,7 +28,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "tourze\\Http\\": "tests/"
+      "tourze\\Controller\\": "tests/"
     },
     "files": [
       "bootstrap-dev.php"
