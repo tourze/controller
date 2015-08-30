@@ -5,7 +5,7 @@ namespace tourze\Controller;
 use tourze\Base\Object;
 use tourze\Http\Exception\Http404Exception;
 use tourze\Http\Exception\HttpException;
-use tourze\Http\Message;
+use tourze\Http\Http;
 use tourze\Http\Response;
 use tourze\Http\Request;
 
@@ -117,7 +117,7 @@ abstract class Controller extends Object
      */
     public function missingAction()
     {
-        throw HttpException::factory(Message::NOT_FOUND, 'The requested URL :uri was not found on this server.', [
+        throw HttpException::factory(Http::NOT_FOUND, 'The requested URL :uri was not found on this server.', [
             ':uri' => $this->request->uri
         ])->request($this->request);
     }

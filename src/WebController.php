@@ -2,8 +2,7 @@
 
 namespace tourze\Controller;
 
-use tourze\Http\Response;
-use tourze\Http\Http;
+use tourze\Base\Base;
 use tourze\Http\Exception\HttpException;
 
 /**
@@ -23,19 +22,6 @@ abstract class WebController extends Controller
      */
     public function redirect($uri = '', $code = 302)
     {
-        Http::redirect((string) $uri, $code);
-    }
-
-    /**
-     * 检测请求缓存
-     *
-     *     $this->checkCache(sha1($content));
-     *
-     * @param  string $etag Resource Etag
-     * @return Response
-     */
-    protected function checkCache($etag = null)
-    {
-        return Http::checkCache($this->request, $this->response, $etag);
+        Base::getHttp()->redirect((string) $uri, $code);
     }
 }
