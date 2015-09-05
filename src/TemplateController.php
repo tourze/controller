@@ -2,15 +2,16 @@
 
 namespace tourze\Controller;
 
+use tourze\Base\Base;
 use tourze\View\View;
 use tourze\View\ViewInterface;
 
 /**
  * 最基础的模板控制器，实现页面布局分离功能
  *
- * @package    Base
- * @category   Controller
- * @author     YwiSax
+ * @property bool        autoRender
+ * @property string|View template
+ * @package tourze\Controller
  */
 abstract class TemplateController extends WebController
 {
@@ -18,12 +19,44 @@ abstract class TemplateController extends WebController
     /**
      * @var  string|View  模板名，或者模板对象
      */
-    protected $template = 'template';
+    protected $_template = 'template';
 
     /**
-     * @var  boolean  是否自动加载模板
+     * @return string|View
+     */
+    public function getTemplate()
+    {
+        return $this->_template;
+    }
+
+    /**
+     * @param string|View $template
+     */
+    public function setTemplate($template)
+    {
+        $this->_template = $template;
+    }
+
+    /**
+     * @var bool 是否自动加载模板
      **/
-    public $autoRender = true;
+    protected $_autoRender = true;
+
+    /**
+     * @return boolean
+     */
+    public function isAutoRender()
+    {
+        return $this->_autoRender;
+    }
+
+    /**
+     * @param boolean $autoRender
+     */
+    public function setAutoRender($autoRender)
+    {
+        $this->_autoRender = $autoRender;
+    }
 
     /**
      * 初始化，并加载模板对象
@@ -32,12 +65,20 @@ abstract class TemplateController extends WebController
     {
         parent::before();
 
-        if (true === $this->autoRender)
+        if ($this->autoRender)
         {
+            Base::getLog()->debug(__METHOD__ . ' enable auto render');
             if ( ! $this->template instanceof ViewInterface)
             {
+                Base::getLog()->debug(__METHOD__ . ' create template view instance', [
+                    'template' => $this->template,
+                ]);
                 $this->template = View::factory($this->template);
             }
+        }
+        else
+        {
+            Base::getLog()->debug(__METHOD__ . ' disable auto render');
         }
     }
 
@@ -46,11 +87,11 @@ abstract class TemplateController extends WebController
      */
     public function after()
     {
-        if (true === $this->autoRender)
+        if ($this->autoRender)
         {
+            Base::getLog()->debug(__METHOD__ . ' render template view');
             $this->response->body = $this->template->render();
         }
         parent::after();
     }
-
 }

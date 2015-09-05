@@ -2,25 +2,60 @@
 
 namespace tourze\Controller;
 
+use tourze\Base\Base;
 use tourze\Controller\Exception\JsonpInvalidParameterException;
 
 /**
  * JSONP控制器
  *
+ * @property string callbackParam
+ * @property bool   autoSink
  * @package tourze\Controller
  */
-abstract class JsonpController extends WebController
+abstract class JsonpController extends JsonController
 {
 
     /**
      * @var string callback字符串
      */
-    public $callbackParam = 'callback';
+    protected $_callbackParam = 'callback';
+
+    /**
+     * @return string
+     */
+    public function getCallbackParam()
+    {
+        return $this->_callbackParam;
+    }
+
+    /**
+     * @param string $callbackParam
+     */
+    public function setCallbackParam($callbackParam)
+    {
+        $this->_callbackParam = $callbackParam;
+    }
 
     /**
      * @var bool 自动降级标记，当没有callback时，自动调整为json方式
      */
-    public $autoSink = false;
+    protected $_autoSink = false;
+
+    /**
+     * @return boolean
+     */
+    public function isAutoSink()
+    {
+        return $this->_autoSink;
+    }
+
+    /**
+     * @param boolean $autoSink
+     */
+    public function setAutoSink($autoSink)
+    {
+        $this->_autoSink = $autoSink;
+    }
 
     /**
      * @inheritdoc
@@ -37,24 +72,13 @@ abstract class JsonpController extends WebController
         // 继续执行
         parent::executeAction();
 
-        $this->response->headers('content-type', 'application/json');
-        $this->response->body = $this->formatContent($callback, (array) $this->actionResult);
-    }
-
-    /**
-     * 格式化输出
-     *
-     * @param string $callback
-     * @param mixed  $result
-     * @return string
-     */
-    protected function formatContent($callback, $result)
-    {
-        if ( ! $callback && $this->autoSink)
+        // 附加上callback
+        if ($callback)
         {
-            return json_encode($result);
+            Base::getLog()->debug(__METHOD__ . ' append callback string', [
+                'callback' => $callback,
+            ]);
+            $this->response->body = $callback . '(' . $this->response->body . ')';
         }
-        return $callback . '(' . json_encode($result) . ')';
     }
-
 }

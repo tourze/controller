@@ -2,6 +2,7 @@
 
 namespace tourze\Controller;
 
+use tourze\Base\Base;
 use tourze\Base\Object;
 use tourze\Http\Exception\Http404Exception;
 use tourze\Http\Exception\HttpException;
@@ -20,9 +21,8 @@ use tourze\Http\Request;
  * @property  Request  request
  * @property  Response response
  * @property  mixed    actionResult
- * @package    Base
- * @category   Controller
- * @author     YwiSax
+ * @property  bool     break
+ * @package tourze\Controller
  */
 abstract class Controller extends Object
 {
@@ -33,9 +33,41 @@ abstract class Controller extends Object
     public $_request;
 
     /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function setRequest($request)
+    {
+        $this->_request = $request;
+    }
+
+    /**
      * @var  Response  用于返回控制器执行结果的响应实例
      */
     public $_response;
+
+    /**
+     * @return Response
+     */
+    public function getResponse()
+    {
+        return $this->_response;
+    }
+
+    /**
+     * @param Response $response
+     */
+    public function setResponse($response)
+    {
+        $this->_response = $response;
+    }
 
     /**
      * @var mixed action的执行结果
@@ -43,9 +75,41 @@ abstract class Controller extends Object
     public $_actionResult;
 
     /**
+     * @return mixed
+     */
+    public function getActionResult()
+    {
+        return $this->_actionResult;
+    }
+
+    /**
+     * @param mixed $actionResult
+     */
+    public function setActionResult($actionResult)
+    {
+        $this->_actionResult = $actionResult;
+    }
+
+    /**
      * @var boolean 标志位，是否停止执行
      */
-    public $break = false;
+    protected $_break = false;
+
+    /**
+     * @return bool
+     */
+    public function isBreak()
+    {
+        return $this->_break;
+    }
+
+    /**
+     * @param bool $break
+     */
+    public function setBreak($break)
+    {
+        $this->_break = $break;
+    }
 
     /**
      * 开始处理请求
@@ -56,6 +120,8 @@ abstract class Controller extends Object
      */
     public function execute()
     {
+        Base::getLog()->debug(__METHOD__ . ' controller execute');
+
         if ( ! $this->break)
         {
             $this->executeBefore();
@@ -80,6 +146,8 @@ abstract class Controller extends Object
      */
     public function executeAction()
     {
+        Base::getLog()->debug(__METHOD__ . ' execute requested action');
+
         $actionSign = '';
         foreach (explode('-', $this->request->action) as $part)
         {
@@ -90,12 +158,17 @@ abstract class Controller extends Object
             'action' . $actionSign
         ];
 
+        Base::getLog()->debug(__METHOD__ . ' generate actions to match', $actions);
+
         $matchAction = false;
         foreach ($actions as $action)
         {
             if (method_exists($this, $action))
             {
                 $matchAction = $action;
+                Base::getLog()->debug(__METHOD__ . ' find matched action', [
+                    'action' => $matchAction,
+                ]);
                 break;
             }
         }
@@ -107,7 +180,9 @@ abstract class Controller extends Object
         }
 
         // 保存结果
+        Base::getLog()->debug(__METHOD__ . ' run action - start');
         $this->actionResult = $this->{$matchAction}();
+        Base::getLog()->debug(__METHOD__ . ' run action - end');
     }
 
     /**
@@ -124,77 +199,37 @@ abstract class Controller extends Object
 
     /**
      * 执行action前的操作，可以做预备操作
-     *
-     * @return  void
      */
     public function before()
     {
+        // empty
     }
 
-    public function executeBefore()
+    /**
+     * 不要继承这个方法
+     */
+    private function executeBefore()
     {
+        Base::getLog()->debug(__METHOD__ . ' execute before action - start');
         $this->before();
+        Base::getLog()->debug(__METHOD__ . ' execute before action - end');
     }
 
     /**
      * 执行action后的操作，可以用来做收尾工作
-     *
-     * @return  void
      */
     public function after()
     {
+        // empty
     }
 
-    public function executeAfter()
+    /**
+     * 不要继承这个方法
+     */
+    private function executeAfter()
     {
+        Base::getLog()->debug(__METHOD__ . ' execute after action - start');
         $this->after();
-    }
-
-    /**
-     * @return Request
-     */
-    public function getRequest()
-    {
-        return $this->_request;
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function setRequest($request)
-    {
-        $this->_request = $request;
-    }
-
-    /**
-     * @return Response
-     */
-    public function getResponse()
-    {
-        return $this->_response;
-    }
-
-    /**
-     * @param Response $response
-     */
-    public function setResponse($response)
-    {
-        $this->_response = $response;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getActionResult()
-    {
-        return $this->_actionResult;
-    }
-
-    /**
-     * @param mixed $actionResult
-     */
-    public function setActionResult($actionResult)
-    {
-        $this->_actionResult = $actionResult;
+        Base::getLog()->debug(__METHOD__ . ' execute after action - end');
     }
 }

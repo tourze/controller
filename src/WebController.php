@@ -22,6 +22,10 @@ abstract class WebController extends Controller
      */
     public function redirect($uri = '', $code = 302)
     {
+        Base::getLog()->debug(__METHOD__ . ' redirect from controller', [
+            'uri'  => $uri,
+            'code' => $code,
+        ]);
         Base::getHttp()->redirect((string) $uri, $code);
     }
 }
