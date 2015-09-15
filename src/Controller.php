@@ -18,10 +18,10 @@ use tourze\Http\Request;
  *     $controller->actionBar();
  *     $controller->after();
  *
- * @property  Request  request
- * @property  Response response
- * @property  mixed    actionResult
- * @property  bool     break
+ * @property Request  request
+ * @property Response response
+ * @property mixed    actionResult
+ * @property bool     break
  * @package tourze\Controller
  */
 abstract class Controller extends Object
@@ -120,7 +120,7 @@ abstract class Controller extends Object
      */
     public function execute()
     {
-        Base::getLog()->debug(__METHOD__ . ' controller execute');
+        Base::getLog()->debug(__METHOD__ . ' controller execute - start');
 
         if ( ! $this->break)
         {
@@ -135,8 +135,32 @@ abstract class Controller extends Object
             $this->executeAfter();
         }
 
-        // Return the response
+        Base::getLog()->debug(__METHOD__ . ' controller execute - end');
         return $this->response;
+    }
+
+    /**
+     * 准备好要遍历的动作列表
+     *
+     * @return array
+     */
+    public function prepareActionList()
+    {
+        Base::getLog()->debug(__METHOD__ . ' prepare action list for mapping - start');
+        $actionSign = '';
+        foreach (explode('-', $this->request->action) as $part)
+        {
+            $actionSign .= ucfirst($part);
+        }
+
+        $actions = [
+            'action' . $actionSign,
+        ];
+
+        Base::getLog()->debug(__METHOD__ . ' prepare action list for mapping - end', [
+            'actions' => $actions,
+        ]);
+        return $actions;
     }
 
     /**
@@ -148,17 +172,7 @@ abstract class Controller extends Object
     {
         Base::getLog()->debug(__METHOD__ . ' execute requested action');
 
-        $actionSign = '';
-        foreach (explode('-', $this->request->action) as $part)
-        {
-            $actionSign .= ucfirst($part);
-        }
-
-        $actions = [
-            'action' . $actionSign
-        ];
-
-        Base::getLog()->debug(__METHOD__ . ' generate actions to match', $actions);
+        $actions = $this->prepareActionList();
 
         $matchAction = false;
         foreach ($actions as $action)
@@ -193,7 +207,7 @@ abstract class Controller extends Object
     public function missingAction()
     {
         throw HttpException::factory(Http::NOT_FOUND, 'The requested URL :uri was not found on this server.', [
-            ':uri' => $this->request->uri
+            ':uri' => $this->request->uri,
         ])->request($this->request);
     }
 
